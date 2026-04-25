@@ -4,3 +4,5 @@ export type todos = {
     title: string,
     completed: boolean,
 };
+
+export type todoCreateUpdate = Omit<todos, "id">;
