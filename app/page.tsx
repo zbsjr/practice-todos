@@ -14,10 +14,9 @@ export default function Home() {
   const [todoUserId, setTodoUserId] = useState(1);
   const [todoTitle, setTodoTitle] = useState("");
   const [todoStatus, setTodoStatus] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(true);
     const loadTodos = async () => {
       const data = await fetchTodos();
       setTodos(data);
