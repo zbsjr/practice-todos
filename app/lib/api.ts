@@ -5,10 +5,11 @@ import { todos, todoCreateUpdate } from './definitions';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
-export async function fetchTodos(): Promise<todos[]> {
+export async function fetchTodos(query: string): Promise<todos[]> {
     try {
+        const pattern = `%${query}%`;
         const res = await sql<todos[]>`
-            SELECT id, user_id AS "userId", title, completed FROM todos
+            SELECT id, user_id AS "userId", title, completed FROM todos WHERE title ILIKE ${pattern}
         `;
 
         return res;

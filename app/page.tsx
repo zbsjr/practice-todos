@@ -1,10 +1,13 @@
 "use client";
 
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useDebouncedCallback } from "use-debounce";
 import { fetchTodos, createTodo, updateTodo, deleteTodo, toggleStatusTodo } from "./lib/api";
 import { useState, useEffect } from "react";
 import { todos } from "./lib/definitions";
 import { CompletedCountComponent } from "./components/CompletedCountComponent";
 import { CreateTodoFormComponent } from "./components/CreateTodoFormComponent";
+import { SearchFilterComponent } from "./components/SearchFilterComponent";
 import { TodosGridComponent } from "./components/TodosGridComponent";
 import Loading from "./loading";
 
@@ -16,15 +19,33 @@ export default function Home() {
   const [todoStatus, setTodoStatus] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Handle search
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+  const handleSearch = useDebouncedCallback((terms: string) => {
+    const params = new URLSearchParams(searchParams);
+
+    if (terms) {
+      params.set('query', terms);
+    } else {
+      params.delete('query');
+    }
+
+    replace(`${pathname}?${params.toString()}`);
+  }, 300);
+
+  const query = searchParams.get('query')?.toString() || '';
+
   useEffect(() => {
-    const loadTodos = async () => {
-      const data = await fetchTodos();
+    const filterTodos = async () => {
+      const data = await fetchTodos(query);
       setTodos(data);
       setIsLoading(false);
     };
 
-    loadTodos();
-  }, []);
+    filterTodos();
+  }, [query]);
 
   const completedCount = todos.filter((t) => t.completed).length;
 
@@ -146,6 +167,8 @@ export default function Home() {
             handleCreateTodo={handleCreateTodo}
             clearForm={clearForm}
           />
+
+          <SearchFilterComponent handleSearch={handleSearch} />
 
           <TodosGridComponent
             todos={todos}
