@@ -17,7 +17,8 @@ export default function Home() {
   const [todoUserId, setTodoUserId] = useState(1);
   const [todoTitle, setTodoTitle] = useState("");
   const [todoStatus, setTodoStatus] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSerching, setIsSearching] = useState(false);
 
   // Handle search
   const searchParams = useSearchParams();
@@ -38,10 +39,11 @@ export default function Home() {
   const query = searchParams.get('query')?.toString() || '';
 
   useEffect(() => {
+    setIsSearching(true);
     const filterTodos = async () => {
       const data = await fetchTodos(query);
       setTodos(data);
-      setIsLoading(false);
+      setIsSearching(false);
     };
 
     filterTodos();
@@ -168,7 +170,7 @@ export default function Home() {
             clearForm={clearForm}
           />
 
-          <SearchFilterComponent handleSearch={handleSearch} />
+          <SearchFilterComponent handleSearch={handleSearch} isSerching={isSerching} />
 
           <TodosGridComponent
             todos={todos}

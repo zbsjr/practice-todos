@@ -4,9 +4,10 @@ import { useSearchParams } from "next/navigation";
 
 type searchProps = {
     handleSearch: (e: string) => void;
+    isSerching: boolean;
 };
 
-export function SearchFilterComponent({ handleSearch }: searchProps) {
+export function SearchFilterComponent({ handleSearch, isSerching }: searchProps) {
     const searchParams = useSearchParams();
 
     return (
@@ -34,11 +35,49 @@ export function SearchFilterComponent({ handleSearch }: searchProps) {
                     id="search"
                     type="text"
                     placeholder="Search todos..."
-                    className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                    className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-10 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                     onChange={(e) => handleSearch(e.target.value)}
                     defaultValue={searchParams.get('query')?.toString()}
                 />
+                <span
+                    aria-hidden={!isSerching}
+                    className={`pointer-events-none absolute inset-y-0 right-3 flex items-center text-indigo-500 transition-opacity duration-200 ${isSerching ? 'opacity-100' : 'opacity-0'}`}
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        className="h-4 w-4 animate-spin"
+                    >
+                        <circle
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeOpacity="0.25"
+                            strokeWidth="4"
+                        />
+                        <path
+                            d="M22 12a10 10 0 0 1-10 10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                        />
+                    </svg>
+                </span>
             </div>
+            <p
+                role="status"
+                aria-live="polite"
+                className={`mt-2 flex items-center gap-1.5 text-xs text-slate-500 transition-opacity duration-200 ${isSerching ? 'opacity-100' : 'opacity-0'}`}
+            >
+                Searching
+                <span className="inline-flex gap-0.5" aria-hidden="true">
+                    <span className="h-1 w-1 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
+                    <span className="h-1 w-1 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
+                    <span className="h-1 w-1 animate-bounce rounded-full bg-slate-400" />
+                </span>
+            </p>
         </section>
     );
 }
