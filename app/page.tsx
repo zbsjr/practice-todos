@@ -33,7 +33,7 @@ export default function Home() {
       params.delete('query');
     }
 
-    replace(`${pathname}?${params.toString()}`);
+    replace(`${pathname}?${params.toString()}`, { scroll: false });
   }, 300);
 
   const query = searchParams.get('query')?.toString() || '';
