@@ -9,7 +9,10 @@ import { CompletedCountComponent } from "./components/CompletedCountComponent";
 import { CreateTodoFormComponent } from "./components/CreateTodoFormComponent";
 import { SearchFilterComponent } from "./components/SearchFilterComponent";
 import { TodosGridComponent } from "./components/TodosGridComponent";
+import { PaginationComponent } from "./components/PaginationComponent";
 import Loading from "./loading";
+
+const PAGE_SIZE = 5;
 
 export default function Home() {
   const [todos, setTodos] = useState<todos[]>([]);
@@ -19,35 +22,41 @@ export default function Home() {
   const [todoStatus, setTodoStatus] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSerching, setIsSearching] = useState(false);
+  const [totalTodos, setTotalTodos] = useState(0);
 
-  // Handle search
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
+
+  const query = searchParams.get('query')?.toString() || '';
+  const page = Number(searchParams.get('page')) || 1;
+  const totalPages = Math.ceil(totalTodos / PAGE_SIZE);
+
+  // Handle search — also reset pagination so we don't end up on a stale page
   const handleSearch = useDebouncedCallback((terms: string) => {
     const params = new URLSearchParams(searchParams);
 
+    params.delete('query');
+    params.delete('page');
     if (terms) {
       params.set('query', terms);
-    } else {
-      params.delete('query');
     }
 
     replace(`${pathname}?${params.toString()}`, { scroll: false });
   }, 300);
 
-  const query = searchParams.get('query')?.toString() || '';
-
   useEffect(() => {
     setIsSearching(true);
     const filterTodos = async () => {
-      const data = await fetchTodos(query);
-      setTodos(data);
+      const offset = (page - 1) * PAGE_SIZE;
+      const data = await fetchTodos(query, PAGE_SIZE, offset);
+      setTodos(data.todos);
+      setTotalTodos(data.total);
       setIsSearching(false);
     };
 
     filterTodos();
-  }, [query]);
+  }, [query, page]);
 
   const completedCount = todos.filter((t) => t.completed).length;
 
@@ -178,6 +187,8 @@ export default function Home() {
             toggleEditMode={toggleEditMode}
             handleDeleteTodo={handleDeleteTodo}
           />
+
+          <PaginationComponent totalPages={totalPages} />
         </div>
       )}
 

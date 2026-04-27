@@ -5,14 +5,34 @@ import { todos, todoCreateUpdate } from './definitions';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
-export async function fetchTodos(query: string): Promise<todos[]> {
+async function fetchTodosCount(pattern: string): Promise<number> {
+    try {
+        const [row] = await sql<{ count: string; }[]>`
+            SELECT COUNT(*) FROM todos WHERE title ILIKE ${pattern}
+        `;
+
+        return Number(row.count);
+    } catch (err) {
+        console.error("fetchTodosCount failed:", err);
+        throw new Error("Failed to fetch count data.");
+    }
+}
+
+type promiseType = {
+    todos: todos[],
+    total: number,
+};
+
+export async function fetchTodos(query: string, limit: number, offset: number): Promise<promiseType> {
     try {
         const pattern = `%${query}%`;
         const res = await sql<todos[]>`
-            SELECT id, user_id AS "userId", title, completed FROM todos WHERE title ILIKE ${pattern}
+            SELECT id, user_id AS "userId", title, completed FROM todos WHERE title ILIKE ${pattern} LIMIT ${limit} OFFSET ${offset};
         `;
 
-        return res;
+        const total = await fetchTodosCount(pattern);
+
+        return { todos: res, total };
     } catch (err) {
         console.error("fetchTodos failed:", err);
         throw new Error("Failed to fetch data.");
